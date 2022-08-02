@@ -22,7 +22,13 @@ THE SOFTWARE.
 #include <algorithm>
 #include <vector>
 
-// comp(element, value) return true <=====> element < value
+template <class Compare> struct _comp_warpper {
+    Compare& _comp;
+    _comp_warpper(Compare& comp) : _comp(comp) { }
+    template <class T1, class T2> bool operator()(T1& i1, T2& i2) { return _comp(i1, i2) < 0; }
+};
+
+// comp(element, value) like strcmp <=====> Returns < 0 if element is less than value; > 0 if element is greater than value, and 0 if they are equal.
 // return:
 //  first: an iterator pointing to the first element in the range [first, last)
 //      that does not satisfy comp(element, value), (i.e. greater or equal to),
@@ -30,8 +36,8 @@ THE SOFTWARE.
 //  second: true if an element equal to value is found, false otherwise.
 template <class ForwardIt, class T, class Compare> std::pair<ForwardIt, bool> binary_find(ForwardIt first, ForwardIt last, const T& value, Compare comp)
 {
-    auto ret = std::make_pair(std::lower_bound(first, last, value, comp), false);
-    ret.second = ret.first != last && !comp(value, *ret.first);
+    auto ret = std::make_pair(std::lower_bound(first, last, value, _comp_warpper<Compare>(comp)), false);
+    ret.second = ret.first != last && !comp(*ret.first, value);
     return ret;
 }
 
